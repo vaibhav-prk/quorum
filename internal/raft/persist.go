@@ -34,7 +34,7 @@ func openPersister(dir string) (*persister, error) {
 
 // load reads term and votedFor from disk.
 // A brand-new (empty) file returns 0, 0 — correct initial Raft state.
-func (p *persister) load() (term, votedFor uint64, err error) {
+func (p *persister) load() (term uint64, votedFor int64, err error) {
 	buf := make([]byte, persistSize)
 	n, err := p.f.ReadAt(buf, 0)
 
@@ -47,16 +47,16 @@ func (p *persister) load() (term, votedFor uint64, err error) {
 	}
 
 	term = binary.BigEndian.Uint64(buf[0:8])
-	votedFor = binary.BigEndian.Uint64(buf[8:16])
+	votedFor = int64(binary.BigEndian.Uint64(buf[8:16]))
 	return term, votedFor, nil
 }
 
 // save flushes term and votedFor to disk.
 // changes these fields — this is a hard Raft correctness requirement.
-func (p *persister) save(term, votedFor uint64) error {
+func (p *persister) save(term uint64, votedFor int64) error {
 	var buf [persistSize]byte
 	binary.BigEndian.PutUint64(buf[0:8], term)
-	binary.BigEndian.PutUint64(buf[8:16], votedFor)
+	binary.BigEndian.PutUint64(buf[8:16], uint64(votedFor))
 
 	if _, err := p.f.WriteAt(buf[:], 0); err != nil {
 		return err

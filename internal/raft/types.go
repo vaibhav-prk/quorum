@@ -5,14 +5,14 @@ import "github.com/vaibhav-prk/quorum/internal/storage"
 type State uint8
 
 const (
-	Follower  State = iota
+	Follower State = iota
 	Candidate
 	Leader
 )
 
 type VoteRequest struct {
 	Term         uint64
-	CandidateID  uint64
+	CandidateID  int64
 	LastLogIndex uint64
 	LastLogTerm  uint64
 }
@@ -24,7 +24,7 @@ type VoteReply struct {
 
 type AppendRequest struct {
 	Term         uint64
-	LeaderID     uint64
+	LeaderID     int64
 	PrevLogIndex uint64
 	PrevLogTerm  uint64
 	Entries      []storage.Entry

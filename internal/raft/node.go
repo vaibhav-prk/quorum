@@ -10,13 +10,13 @@ import (
 
 type Node struct {
 	mu      sync.Mutex
-	id      uint64
-	peers   []uint64
+	id      int64
+	peers   []int64
 	dataDir string
 
 	// Persistent state (must be saved before replying to RPCs)
 	currentTerm uint64
-	votedFor    uint64
+	votedFor    int64 // -1 = no vote
 	log         *storage.Log
 	persist     *persister
 
@@ -40,7 +40,7 @@ type Node struct {
 
 // NewNode creates a Node, opens (or recovers) its log and persisted state,
 // and starts as a Follower. Call node.Start() to begin the election loop.
-func NewNode(id uint64, peers []uint64, dataDir string, transport Transport, fsm FSM) (*Node, error) {
+func NewNode(id int64, peers []int64, dataDir string, transport Transport, fsm FSM) (*Node, error) {
 	// Open the durable log.
 	log, err := storage.Open(dataDir, storage.Options{})
 	if err != nil {
