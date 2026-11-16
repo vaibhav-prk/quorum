@@ -157,13 +157,12 @@ func (n *Node) becomeLeader() {
 // heartbeatLoop fires repeatedly while this node is Leader.
 func (n *Node) heartbeatLoop() {
 	n.mu.Lock()
+	defer n.mu.Unlock()
+
 	if n.state != Leader {
-		n.mu.Unlock()
 		return
 	}
 	n.sendHeartbeats()
-	n.mu.Unlock()
-
 	n.heartbeatTimer = time.AfterFunc(heartbeatInterval, n.heartbeatLoop)
 }
 
