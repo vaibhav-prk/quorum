@@ -187,7 +187,8 @@ func (l *Log) FirstIndex() uint64 {
 	return l.firstIndex()
 }
 
-// LastIndex returns 0 for an empty log.
+// LastIndex returns the index of the last entry in the log,
+// 0 for an empty log.
 func (l *Log) LastIndex() uint64 {
 	l.mu.Lock()
 	defer l.mu.Unlock()
