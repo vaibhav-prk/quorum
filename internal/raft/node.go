@@ -78,6 +78,25 @@ func NewNode(id int64, peers []int64, dataDir string, transport Transport, fsm F
 	return n, nil
 }
 
+// State returns the node's current role.
+func (n *Node) State() State {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	return n.state
+}
+
+// Term returns the node's current term.
+func (n *Node) Term() uint64 {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	return n.currentTerm
+}
+
+// ID returns the node's id.
+func (n *Node) ID() int64 {
+	return n.id
+}
+
 // Close shuts down the node cleanly.
 func (n *Node) Close() error {
 	n.mu.Lock()
