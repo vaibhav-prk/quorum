@@ -33,6 +33,9 @@ type Node struct {
 	transport Transport
 	fsm       FSM
 
+	// Apply loop signalling
+	applyCh chan struct{}
+
 	// Timing
 	electionTimer  *time.Timer
 	heartbeatTimer *time.Timer
@@ -73,6 +76,7 @@ func NewNode(id int64, peers []int64, dataDir string, transport Transport, fsm F
 		state:       Follower,
 		transport:   transport,
 		fsm:         fsm,
+		applyCh:     make(chan struct{}, 1),
 	}
 
 	return n, nil
