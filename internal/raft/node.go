@@ -35,6 +35,7 @@ type Node struct {
 
 	// Apply loop signalling
 	applyCh chan struct{}
+	stopCh  chan struct{} // closed by Close() to stop background goroutines
 
 	// Timing
 	electionTimer  *time.Timer
