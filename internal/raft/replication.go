@@ -128,8 +128,11 @@ func (n *Node) replicate(peer int64) {
 		}
 
 		// Follower rejected — log diverged. Decrement nextIndex and retry.
-		if n.nextIndex[uint64(peer)] > 1 {
+		if n.nextIndex[uint64(peer)] == req.PrevLogIndex+1 && n.nextIndex[uint64(peer)] > 1 {
 			n.nextIndex[uint64(peer)]--
+		} else if n.nextIndex[uint64(peer)] <= 1 {
+			n.mu.Unlock()
+			return
 		}
 		n.mu.Unlock()
 		// Loop: retry with the decremented nextIndex.
