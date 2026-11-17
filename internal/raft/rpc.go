@@ -112,9 +112,16 @@ func (n *Node) HandleAppendEntries(req *AppendRequest) *AppendReply {
 
 	// --- Step 3: advance commitIndex ---
 	if req.LeaderCommit > n.commitIndex {
-		lastNew := req.PrevLogIndex + uint64(len(req.Entries))
-		n.commitIndex = min(req.LeaderCommit, lastNew)
-		n.signalApply()
+		var lastIdx uint64
+		if len(req.Entries) > 0 {
+			lastIdx = req.PrevLogIndex + uint64(len(req.Entries))
+		} else {
+			lastIdx = n.log.LastIndex()
+		}
+		if lastIdx > n.commitIndex {
+			n.commitIndex = min(req.LeaderCommit, lastIdx)
+			n.signalApply()
+		}
 	}
 
 	reply.Success = true
