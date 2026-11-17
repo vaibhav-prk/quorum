@@ -166,33 +166,11 @@ func (n *Node) heartbeatLoop() {
 	n.heartbeatTimer = time.AfterFunc(heartbeatInterval, n.heartbeatLoop)
 }
 
-// sendHeartbeats sends empty AppendEntries to all peers.
+// sendHeartbeats triggers replication/heartbeat to all peers.
 // Must be called with n.mu held.
 func (n *Node) sendHeartbeats() {
-	term := n.currentTerm
-	leaderID := n.id
-
 	for _, peer := range n.peers {
-		go func(peer int64) {
-			req := &AppendRequest{
-				Term:     term,
-				LeaderID: leaderID,
-			}
-			ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
-			defer cancel()
-
-			reply, err := n.transport.AppendEntries(ctx, peer, req)
-			if err != nil {
-				return
-			}
-
-			n.mu.Lock()
-			defer n.mu.Unlock()
-
-			if reply.Term > n.currentTerm {
-				n.becomeFollower(reply.Term)
-			}
-		}(peer)
+		go n.replicate(peer)
 	}
 }
 
@@ -209,9 +187,10 @@ func (n *Node) lastLogTerm(lastIndex uint64) uint64 {
 	return e.Term
 }
 
-// Start begins the election loop. Call once after NewNode.
+// Start begins the election loop and background routines. Call once after NewNode.
 func (n *Node) Start() {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 	n.resetElectionTimer()
+	go n.applyLoop()
 }

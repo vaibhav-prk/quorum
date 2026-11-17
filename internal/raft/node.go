@@ -78,6 +78,7 @@ func NewNode(id int64, peers []int64, dataDir string, transport Transport, fsm F
 		transport:   transport,
 		fsm:         fsm,
 		applyCh:     make(chan struct{}, 1),
+		stopCh:      make(chan struct{}),
 	}
 
 	return n, nil
@@ -106,6 +107,12 @@ func (n *Node) ID() int64 {
 func (n *Node) Close() error {
 	n.mu.Lock()
 	defer n.mu.Unlock()
+
+	select {
+	case <-n.stopCh:
+	default:
+		close(n.stopCh)
+	}
 
 	if n.electionTimer != nil {
 		n.electionTimer.Stop()
